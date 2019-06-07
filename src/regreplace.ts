@@ -98,7 +98,7 @@ export function calculateTargetTextForAllRules(
 				}
 
 				const reg =
-					command.global === false ? new RegExp(regexQuery) : new RegExp(regexQuery, 'g');
+					command.global === false ? new RegExp(regexQuery) : new RegExp(regexQuery, 'gm');
 				resultText = resultText.replace(reg, regexReplace);
 			} catch (error) {
 				if (!getConfiguration<boolean>('suppress-warnings')) {
