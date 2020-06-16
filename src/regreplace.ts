@@ -121,9 +121,12 @@ export function calculateTargetTextForAllRules(
           });
         }
 
-        // trans ' - ' to '-'
-        if (/\s-\s/.test(resultText)) {
-          resultText = resultText.replace(/\s-\s/g, '-');
+        // trans ' - ' to '-', ' / ' to '/'
+        if (/('.*)(\s-\s)(.*')/.test(resultText)) {
+          resultText = resultText.replace(/('.*)(\s-\s)(.*')/g, '$1-$3');
+        }
+        if (/('.*)(\s\/\s)(.*')/.test(resultText)) {
+          resultText = resultText.replace(/('.*)(\s\/\s)(.*')/g, '$1/$3');
         }
       } catch (error) {
         if (!getConfiguration<boolean>('suppress-warnings')) {
