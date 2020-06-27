@@ -102,7 +102,11 @@ export function calculateTargetTextForAllRules(
 
         // result
         if (command.replace != null) {
-          regexReplace = command.replace;
+          // regexReplace = command.replace;
+          regexReplace =
+            typeof command.replace === 'string'
+              ? command.replace
+              : command.replace.join('\n');
         } else {
           return;
         }
@@ -116,17 +120,36 @@ export function calculateTargetTextForAllRules(
         // if /\\\\U(.)/ 를 가지고 있다면
         // (.) 이 부분을 uppercase로 변경한다.
         if (/\\U(.)/.test(resultText)) {
-          resultText = resultText.replace(/\\U(.)/, function ($0, $1) {
+          resultText = resultText.replace(/\\U(.)/g, function ($0, $1) {
             return $0.replace($0, $1.toUpperCase());
           });
         }
+        if (/\\AU([\d\w_]*)/.test(resultText)) {
+          resultText = resultText.replace(/\\AU([\d\w_]*)/g, function ($0, $1) {
+            return $0.replace($0, $1.toUpperCase());
+          });
+        }
+        if (/(export const [a-zA-Z0-9]*)_(.)/.test(resultText)) {
+          resultText = resultText.replace(
+            /(export const [a-zA-Z0-9]*)_(.)/,
+            function ($0, $1, $2) {
+              return `${$1}${$2.toUpperCase()}`;
+            }
+          );
+        }
 
         // trans ' - ' to '-', ' / ' to '/'
-        if (/('.*)(\s-\s)(.*')/.test(resultText)) {
-          resultText = resultText.replace(/('.*)(\s-\s)(.*')/g, '$1-$3');
+        if (/from ('.*)(\s-\s)(.*')/.test(resultText)) {
+          resultText = resultText.replace(
+            /from ('.*)(\s-\s)(.*')/gm,
+            'from $1-$3'
+          );
         }
-        if (/('.*)(\s\/\s)(.*')/.test(resultText)) {
-          resultText = resultText.replace(/('.*)(\s\/\s)(.*')/g, '$1/$3');
+        if (/from ('.*)(\s\/\s)(.*')/.test(resultText)) {
+          resultText = resultText.replace(
+            /from ('.*)(\s\/\s)(.*')/gm,
+            'from $1/$3'
+          );
         }
       } catch (error) {
         if (!getConfiguration<boolean>('suppress-warnings')) {
@@ -341,6 +364,6 @@ interface ICommand {
   priority?: number; // execution prio
   find?: string; // use regular search e.g. "** what"
   regexp?: string; // use regexp, need to escape e.g. "(\\n)*"
-  replace: string; // replace with groups e.g. "$2\n$1"
+  replace: string | string[]; // replace with groups e.g. "$2\n$1"
   global?: boolean; // default true, used in regexp
 }

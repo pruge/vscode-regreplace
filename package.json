@@ -1,161 +1,164 @@
 {
-    "name": "regreplace",
-    "displayName": "regreplace",
-    "description": "Regular expressions replacing befor save.",
-    "version": "1.3.1",
-    "publisher": "DomiR",
-    "license": "MIT",
-    "homepage": "https://github.com/DomiR/vscode-regreplace/blob/master/README.md",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/DomiR/vscode-regreplace.git"
-    },
-    "galleryBanner": {
-        "color": "#2980b9",
-        "theme": "dark"
-    },
-    "icon": "assets/logo.png",
-    "bugs": {
-        "url": "https://github.com/DomiR/vscode-regreplace/issues"
-    },
-    "engines": {
-        "vscode": "^1.6.0"
-    },
-    "categories": [
-        "Languages",
-        "Other"
+  "name": "regreplace",
+  "displayName": "regreplace",
+  "description": "Regular expressions replacing befor save.",
+  "version": "1.3.1",
+  "publisher": "DomiR",
+  "license": "MIT",
+  "homepage": "https://github.com/DomiR/vscode-regreplace/blob/master/README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DomiR/vscode-regreplace.git"
+  },
+  "galleryBanner": {
+    "color": "#2980b9",
+    "theme": "dark"
+  },
+  "icon": "assets/logo.png",
+  "bugs": {
+    "url": "https://github.com/DomiR/vscode-regreplace/issues"
+  },
+  "engines": {
+    "vscode": "^1.6.0"
+  },
+  "categories": [
+    "Languages",
+    "Other"
+  ],
+  "keywords": [
+    "ES6",
+    "ES2015",
+    "OnSave",
+    "Replace"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/src/extension",
+  "contributes": {
+    "commands": [
+      {
+        "command": "regreplace.regreplace",
+        "title": "RegReplace: Run all"
+      },
+      {
+        "command": "regreplace.run-single-rule",
+        "title": "RegReplace: Run single rule"
+      },
+      {
+        "command": "regreplace.save-without-regreplace",
+        "title": "RegReplace: Save without replacing"
+      }
     ],
-    "keywords": [
-        "ES6",
-        "ES2015",
-        "OnSave",
-        "Replace"
-    ],
-    "activationEvents": [
-        "*"
-    ],
-    "main": "./out/src/extension",
-    "contributes": {
-        "commands": [
-            {
-                "command": "regreplace.regreplace",
-                "title": "RegReplace: Run all"
-            },
-            {
-                "command": "regreplace.run-single-rule",
-                "title": "RegReplace: Run single rule"
-            },
-            {
-                "command": "regreplace.save-without-regreplace",
-                "title": "RegReplace: Save without replacing"
-            }
-        ],
-        "configuration": {
-            "title": "Regreplace configuration",
+    "configuration": {
+      "title": "Regreplace configuration",
+      "properties": {
+        "regreplace.on-save": {
+          "type": "boolean",
+          "default": true,
+          "description": "Regreplace on save."
+        },
+        "regreplace.suppress-warnings": {
+          "type": "boolean",
+          "default": false,
+          "description": "Suppress warnings when regreplace fails."
+        },
+        "regreplace.commands": {
+          "type": "array",
+          "default": [],
+          "description": "Replace commands.",
+          "items": {
+            "type": "object",
             "properties": {
-                "regreplace.on-save": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Regreplace on save."
+              "name": {
+                "type": "string",
+                "description": "Command name for debugging.",
+                "default": ".*"
+              },
+              "language": {
+                "type": [
+                  "string",
+                  "array"
+                ],
+                "items": {
+                  "type": "string"
                 },
-                "regreplace.suppress-warnings": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Suppress warnings when regreplace fails."
+                "description": "LanguageId used instead of match, (exclude will still work) e.g. \"typescript\"",
+                "default": "javascript"
+              },
+              "match": {
+                "type": [
+                  "string",
+                  "array"
+                ],
+                "items": {
+                  "type": "string"
                 },
-                "regreplace.commands": {
-                    "type": "array",
-                    "default": [],
-                    "description": "Replace commands.",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "type": "string",
-                                "description": "Command name for debugging.",
-                                "default": ".*"
-                            },
-                            "language": {
-                                "type": [
-                                    "string",
-                                    "array"
-                                ],
-                                "items": {
-                                    "type": "string"
-                                },
-                                "description": "LanguageId used instead of match, (exclude will still work) e.g. \"typescript\"",
-                                "default": "javascript"
-                            },
-                            "match": {
-                                "type": [
-                                    "string",
-                                    "array"
-                                ],
-                                "items": {
-                                    "type": "string"
-                                },
-                                "description": "Regex for matching files to run commands on. e.g. \"\\.(ts|js|tsx)$\"",
-                                "default": ".*"
-                            },
-                            "exclude": {
-                                "type": [
-                                    "string",
-                                    "array"
-                                ],
-                                "items": {
-                                    "type": "string"
-                                },
-                                "description": "Regex for matching files *not* to run commands on. e.g. \"^\\.$\" exclude dot files",
-                                "default": ""
-                            },
-                            "priority": {
-                                "type": "number",
-                                "description": "Command priority determines order.",
-                                "default": 0
-                            },
-                            "find": {
-                                "type": "string",
-                                "description": "Use simple find command. e.g. \"** what\"",
-                                "default": ""
-                            },
-                            "regexp": {
-                                "type": "string",
-                                "description": "Use regexp find command. Needs to be escaped. e.g. \"(\\n)*\"",
-                                "default": ""
-                            },
-                            "replace": {
-                                "type": "string",
-                                "description": "Replace text. Supports groups. e.g. \"$2\n$1\"",
-                                "default": ""
-                            },
-                            "global": {
-                                "type": "boolean",
-                                "description": "Run command asynchronously.",
-                                "default": false
-                            }
-                        }
-                    }
-                }
+                "description": "Regex for matching files to run commands on. e.g. \"\\.(ts|js|tsx)$\"",
+                "default": ".*"
+              },
+              "exclude": {
+                "type": [
+                  "string",
+                  "array"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "description": "Regex for matching files *not* to run commands on. e.g. \"^\\.$\" exclude dot files",
+                "default": ""
+              },
+              "priority": {
+                "type": "number",
+                "description": "Command priority determines order.",
+                "default": 0
+              },
+              "find": {
+                "type": "string",
+                "description": "Use simple find command. e.g. \"** what\"",
+                "default": ""
+              },
+              "regexp": {
+                "type": "string",
+                "description": "Use regexp find command. Needs to be escaped. e.g. \"(\\n)*\"",
+                "default": ""
+              },
+              "replace": {
+                "type": [
+                  "string",
+                  "array"
+                ],
+                "description": "Replace text. Supports groups. e.g. \"$2\n$1\"",
+                "default": ""
+              },
+              "global": {
+                "type": "boolean",
+                "description": "Run command asynchronously.",
+                "default": false
+              }
             }
+          }
         }
-    },
-    "scripts": {
-        "vscode:prepublish": "tsc -p ./",
-        "compile": "tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "release": "vsce publish",
-        "minor": "vsce publish minor",
-        "package": "vsce package",
-        "test": "mocha"
-    },
-    "devDependencies": {
-        "@types/mocha": "^7.0.2",
-        "@types/node": "^14.0.13",
-        "mocha": "^8.0.1",
-        "typescript": "^3.9.5",
-        "vscode": "^1.1.37"
-    },
-    "dependencies": {
-        "diff-match-patch": "^1.0.5"
+      }
     }
+  },
+  "scripts": {
+    "vscode:prepublish": "tsc -p ./",
+    "compile": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "release": "vsce publish",
+    "minor": "vsce publish minor",
+    "package": "vsce package",
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^14.0.13",
+    "mocha": "^8.0.1",
+    "typescript": "^3.9.5",
+    "vscode": "^1.1.37"
+  },
+  "dependencies": {
+    "diff-match-patch": "^1.0.5"
+  }
 }
