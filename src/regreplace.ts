@@ -12,9 +12,9 @@ import {
   TextEdit,
   TextEditorEdit,
   Range,
-  Position
+  Position,
 } from 'vscode';
-import { getConfiguration, getMaxRange } from './utils';
+import { getConfiguration, getMaxRange, reloadSettings as rss } from './utils';
 import onSave from './on-save';
 import * as DiffMatchPatch from 'diff-match-patch';
 
@@ -25,7 +25,7 @@ import * as DiffMatchPatch from 'diff-match-patch';
  */
 export function calculateTargetTextForAllRules(
   document: TextDocument,
-  singleCommand?: ICommand
+  singleCommand?: ICommand,
 ): string {
   try {
     const commands = getConfiguration<ICommand[]>('commands');
@@ -75,7 +75,7 @@ export function calculateTargetTextForAllRules(
 
     // sort commands with priority
     const sortedCommands = activeCommands.sort(
-      (a, b) => (a.priority || 0) - (b.priority || 0)
+      (a, b) => (a.priority || 0) - (b.priority || 0),
     );
 
     // use single command if provided
@@ -116,47 +116,58 @@ export function calculateTargetTextForAllRules(
             ? new RegExp(regexQuery)
             : new RegExp(regexQuery, 'gm');
         resultText = resultText.replace(reg, regexReplace);
-
-        // if /\\\\U(.)/ 를 가지고 있다면
+        // if /\\U(.)/ 를 가지고 있다면
         // (.) 이 부분을 uppercase로 변경한다.
         if (/\\U(.)/.test(resultText)) {
           resultText = resultText.replace(/\\U(.)/g, function ($0, $1) {
             return $0.replace($0, $1.toUpperCase());
           });
         }
+        // 단어 전체 uppercase로
         if (/\\AU([\d\w_]*)/.test(resultText)) {
           resultText = resultText.replace(/\\AU([\d\w_]*)/g, function ($0, $1) {
             return $0.replace($0, $1.toUpperCase());
           });
         }
-        if (/(export const [a-zA-Z0-9]*)_(.)/.test(resultText)) {
-          resultText = resultText.replace(
-            /(export const [a-zA-Z0-9]*)_(.)/,
-            function ($0, $1, $2) {
-              return `${$1}${$2.toUpperCase()}`;
-            }
-          );
+        // 빈공간 제거
+        if (/\\Trim([\d\w_\-/ ]*)/.test(resultText)) {
+          resultText = resultText.replace(/\\Trim([\d\w_\-/ ]*)/g, function (
+            $0,
+            $1,
+          ) {
+            return $0.replace($0, $1.replace(/\s/g, ''));
+          });
         }
 
-        // trans ' - ' to '-', ' / ' to '/'
-        if (/from ('.*)(\s-\s)(.*')/.test(resultText)) {
-          resultText = resultText.replace(
-            /from ('.*)(\s-\s)(.*')/gm,
-            'from $1-$3'
-          );
-        }
-        if (/from ('.*)(\s\/\s)(.*')/.test(resultText)) {
-          resultText = resultText.replace(
-            /from ('.*)(\s\/\s)(.*')/gm,
-            'from $1/$3'
-          );
-        }
+        // // 왜 넣어났을까???
+        // if (/(export const [a-z0-9]*)_(.)/.test(resultText)) {
+        //   resultText = resultText.replace(
+        //     /(export const [a-z0-9]*)_(.)/,
+        //     function ($0, $1, $2) {
+        //       return `${$1}${$2.toUpperCase()}`;
+        //     },
+        //   );
+        // }
+
+        // // trans ' - ' to '-', ' / ' to '/'
+        // if (/from ('.*)(\s-\s)(.*')/.test(resultText)) {
+        //   resultText = resultText.replace(
+        //     /from ('.*)(\s-\s)(.*')/gm,
+        //     'from $1-$3',
+        //   );
+        // }
+        // if (/from ('.*)(\s\/\s)(.*')/.test(resultText)) {
+        //   resultText = resultText.replace(
+        //     /from ('.*)(\s\/\s)(.*')/gm,
+        //     'from $1/$3',
+        //   );
+        // }
       } catch (error) {
         if (!getConfiguration<boolean>('suppress-warnings')) {
           window.showWarningMessage(
             `Error regreplacing in command ${
               command.name || 'Unnamed rule'
-            }: ${error}`
+            }: ${error}`,
           );
         }
         return null;
@@ -204,7 +215,7 @@ export function getPositionFromIndex(text: string, idx: number) {
 export enum CustomEditType {
   Replace = 0,
   Delete = -1,
-  Insert = 1
+  Insert = 1,
 }
 
 interface CustemTextEdit {
@@ -240,7 +251,7 @@ export function getCustomEdits(source, target): CustemTextEdit[] {
         let toIdx = currentIndex + value.length;
         let sourceRange = new Range(
           getPositionFromIndex(source, fromIdx),
-          getPositionFromIndex(source, toIdx)
+          getPositionFromIndex(source, toIdx),
         );
 
         // if next action is insert we do replace instead
@@ -249,7 +260,7 @@ export function getCustomEdits(source, target): CustemTextEdit[] {
             action: CustomEditType.Replace,
             range: sourceRange,
             position: null,
-            value: diff[idx + 1][1]
+            value: diff[idx + 1][1],
           });
           currentIndex += value.length;
         } else {
@@ -257,7 +268,7 @@ export function getCustomEdits(source, target): CustemTextEdit[] {
             action: CustomEditType.Delete,
             range: sourceRange,
             position: null,
-            value: ''
+            value: '',
           });
           currentIndex += value.length;
         }
@@ -270,7 +281,7 @@ export function getCustomEdits(source, target): CustemTextEdit[] {
             action: CustomEditType.Insert,
             range: new Range(p, p),
             position: p,
-            value: value
+            value: value,
           });
         }
         // last action was delete, we skip
@@ -285,7 +296,7 @@ export function getCustomEdits(source, target): CustemTextEdit[] {
 function applyEditsForNewText(regreplacedText) {
   const {
     activeTextEditor: editor,
-    activeTextEditor: { document }
+    activeTextEditor: { document },
   } = window;
 
   return editor.edit((edit) => {
@@ -314,7 +325,7 @@ function applyEditsForNewText(regreplacedText) {
 export function regreplaceCurrentDocument() {
   const {
     activeTextEditor: editor,
-    activeTextEditor: { document }
+    activeTextEditor: { document },
   } = window;
 
   const regreplacedText = calculateTargetTextForAllRules(document);
@@ -330,28 +341,8 @@ export async function saveWithoutReplacing() {
   onSave.bypass(async () => await document.save());
 }
 
-export function runSingleRule() {
-  const {
-    activeTextEditor: { document }
-  } = window;
-  const commands = getConfiguration<ICommand[]>('commands');
-  const commandNames = commands.map(
-    (cmd, idx) => `${idx}: ${cmd.name}` || `${idx}: Unnamed rule`
-  );
-  window.showQuickPick(commandNames).then((selected) => {
-    console.log(selected);
-    if (selected != null) {
-      const idx = parseInt(selected.substring(0, selected.indexOf(':')));
-      const command = commands[idx];
-
-      const regreplacedText = calculateTargetTextForAllRules(document, command);
-      if (!regreplacedText || regreplacedText === document.getText()) {
-        return;
-      }
-
-      applyEditsForNewText(regreplacedText);
-    }
-  });
+export function reloadSettings() {
+  rss();
 }
 
 // types
