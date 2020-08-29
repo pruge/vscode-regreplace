@@ -6,21 +6,20 @@
  */
 
 import { Range, workspace } from 'vscode';
+import { parse } from 'hjson';
 const clearModule = require('clear-module');
-import setting from './settings';
-import { watchFile } from 'fs';
-const localPath = __dirname + '/settings';
-// const settings = existsSync(localPath) ? require(localPath).default : {};
+import { watchFile, readFileSync } from 'fs';
+const localPath = __dirname + '/settings.json';
 
-let settings = require(localPath).default || [];
+let settings = parse(readFileSync(localPath).toString()).settings || [];
 
 export const EXTENSION_NAME = 'regreplace';
 
-watchFile(localPath + '.js', reloadSettings);
+watchFile(localPath, reloadSettings);
 
 export function reloadSettings() {
   clearModule(localPath);
-  settings = require(localPath).default || [];
+  settings = parse(readFileSync(localPath).toString()).settings || [];
 }
 
 export function getConfiguration<T>(key: string): T {

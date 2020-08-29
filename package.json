@@ -72,8 +72,9 @@
     "postinstall": "node ./node_modules/vscode/bin/install",
     "release": "vsce publish",
     "minor": "vsce publish minor",
-    "package": "vsce package",
-    "test": "mocha"
+    "package": "npm run -s copy && vsce package",
+    "test": "mocha",
+    "copy": "node copy settings.json"
   },
   "devDependencies": {
     "@types/mocha": "^8.0.3",
@@ -84,6 +85,7 @@
   },
   "dependencies": {
     "clear-module": "^4.1.1",
-    "diff-match-patch": "^1.0.5"
+    "diff-match-patch": "^1.0.5",
+    "hjson": "^3.2.1"
   }
 }
